@@ -13,11 +13,12 @@ enum mouseMode
 {
 	NORMAL = 1,
 	DRAW_RECT,			/* 사각형 그리기 클릭된 상태 */
+	DRAW_ELLI,			/* 원 그리기 클릭된 상태 */
+	DRAW_LINE,			/* 선 그리기 클릭된 상태 */
 	FIGURE_SELECTED,	/* 도형/그룹이 선택완료된 상태 */
 	FIGURE_MOVE,		/* 도형/그룹을 이동중인 상태 */
-	DO_FIGURE_SELECT	/* 도형/그룹을 선택 중 (드래그 중) 인 상태 */
-
-	/* khlee: fill up here with your own codes */
+	DO_FIGURE_SELECT,	/* 도형/그룹을 선택 중 (드래그 중) 인 상태 */
+	DO_POINT_SELECT		/* 도형 크기를 재조정중 인 상태 */
 };
 
 class CChildView : public CWnd
@@ -31,8 +32,12 @@ public:
 	enum mouseMode mode;
 	CPoint starting_point;
 	CPoint current_point;
-	vector<FigureRectangle*> drawings;
-	FigureRectangle* selecting_region;
+	vector<Figure*> figure_point;
+	vector<Figure*> drawings;
+	Figure* selecting_region = NULL;
+	FigurePoint* selecting_point;
+	vector<Figure*> selected_region;
+	vector<Figure*> clipboard;
 
 // 작업입니다.
 public:
@@ -74,5 +79,23 @@ public:
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
+	bool isOnSelectedFigure();
+	bool isOnDrawnFigure();
+	int isOnFigurePoint();
+	FigurePoint* getOnFigurePoint()
+	{
+		if (!figure_point.empty())
+		{
+			for (vector<Figure*>::reverse_iterator vit = figure_point.rbegin(); vit != figure_point.rend(); vit++)
+			{
+				if ((*vit)->onFigure(current_point))
+					return dynamic_cast<FigurePoint*>(*vit);
+			}
+		}
+
+		return nullptr;
+	}
+	void setFigurePoint();
+	void removeFigurePoint();
 };
 
